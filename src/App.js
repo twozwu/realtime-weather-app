@@ -1,5 +1,5 @@
 //import './App.css';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayCloudy } from "./images/day-cloudy.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
@@ -139,7 +139,12 @@ function App() {
     rainPossibility: 60,
   });
 
-  const handleClick = () => {
+  useEffect(() => {
+    console.log('execute function in useEffect');
+    fetchCurrentWeather();
+  }, [])
+
+  const fetchCurrentWeather = () => {
     fetch(
       `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
     )
@@ -192,7 +197,7 @@ function App() {
               hour: "numeric",
               minute: "numeric",
             }).format(new Date(currentWeather.observationTime))}{" "}
-            <RefreshIcon onClick={handleClick} />
+            <RefreshIcon onClick={fetchCurrentWeather} />
           </Refresh>
         </WeatherCard>
       </Container>
