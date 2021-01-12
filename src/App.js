@@ -7,7 +7,7 @@ import { ReactComponent as AirFlowIcon } from "./images/airFlow.svg";
 import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 //import { ThemeProvider } from "emotion-theming";
 import { useTheme, ThemeProvider, withTheme } from "@emotion/react";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 const theme = {
   light: {
@@ -124,17 +124,49 @@ const DayCloudyIcon = styled(DayCloudy)`
   flex-basis: 30%;
 `;
 
+const AUTHORIZATION_KEY = "CWB-162A49ED-7604-4411-9750-1DBB6E4CC83F";
+const LOCATION_NAME = "古坑";
+
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
 
   const [currentWeather, setCurrentWeather] = useState({
     observationTime: "2020-12-12 22:10:00",
-    locationName: "臺北市",
+    locationName: "台北市",
     description: "多雲時晴",
     windSpeed: 3.6,
     temperature: 32.1,
     rainPossibility: 60,
   });
+
+  const handleClick = () => {
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        const locationData = data.records.location[0];
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElements, item) => {
+            //neededElements初始值為空物件，item為目前值
+            if (["WDSD", "TEMP"].includes(item.elementName)) {
+              neededElements[item.elementName] = item.elementValue;
+              //把elementName當key，Value當值，塞到neededElements裡面
+            }
+            return neededElements;
+          },
+          {}
+        );
+        setCurrentWeather({
+          observationTime: locationData.time.obsTime,
+          locationName: locationData.locationName,
+          temperature: weatherElements.TEMP,
+          windSpeed: weatherElements.WDSD,
+          description: '多雲時晴',
+          rainPossibility: 60
+        });
+      });
+  };
 
   return (
     <ThemeProvider theme={theme[currentTheme]}>
@@ -160,7 +192,7 @@ function App() {
               hour: "numeric",
               minute: "numeric",
             }).format(new Date(currentWeather.observationTime))}{" "}
-            <RefreshIcon />
+            <RefreshIcon onClick={handleClick} />
           </Refresh>
         </WeatherCard>
       </Container>
