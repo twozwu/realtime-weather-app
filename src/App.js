@@ -1,5 +1,5 @@
 //import './App.css';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayCloudy } from "./images/day-cloudy.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
@@ -145,31 +145,36 @@ const fetchCurrentWeather = () => {
   //   isLoading: true,
   // }));
 
-  return fetch(
-    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
-  )
-    .then((response) => response.json()) //回傳.json()格式檔案
-    .then((data) => {
-      const locationData = data.records.location[0];
-      const weatherElements = locationData.weatherElement.reduce(
-        (neededElements, item) => {
-          //neededElements初始值為空物件，item為目前值
-          if (["WDSD", "TEMP"].includes(item.elementName)) {
-            neededElements[item.elementName] = item.elementValue;
-            //把elementName當key，Value當值，塞到neededElements裡面
-          }
-          return neededElements;
-        },
-        {}
-      );
-      // setWeatherElement((prevState) => ({
-      //   ...prevState,
-      //   observationTime: locationData.time.obsTime,
-      //   locationName: locationData.locationName,
-      //   temperature: weatherElements.TEMP,
-      //   windSpeed: weatherElements.WDSD,
-      // }));
-    });
+  return (
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
+    )
+      //回傳.json()格式檔案
+      .then((response) => response.json())
+      .then((data) => {
+        const locationData = data.records.location[0];
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElements, item) => {
+            //neededElements初始值為空物件，item為目前值
+            if (["WDSD", "TEMP"].includes(item.elementName)) {
+              neededElements[item.elementName] = item.elementValue;
+              //把elementName當key，Value當值，塞到neededElements裡面
+            }
+            return neededElements;
+          },
+          {}
+        );
+        // setWeatherElement((prevState) => ({
+        //   ...prevState,
+        return {
+          observationTime: locationData.time.obsTime,
+          locationName: locationData.locationName,
+          temperature: weatherElements.TEMP,
+          windSpeed: weatherElements.WDSD,
+        };
+        // }));
+      })
+  );
 };
 
 const fetchWeatherForecast = () => {
@@ -194,12 +199,14 @@ const fetchWeatherForecast = () => {
       // setWeatherElement((prevState) => ({
       //   //如果沒展開會出錯
       //   ...prevState,
-      //   description: weatherElements.Wx.parameterName,
-      //   weatherCode: weatherElements.Wx.parameterValue,
-      //   rainPossibility: weatherElements.PoP.parameterName,
-      //   comfortability: weatherElements.CI.parameterName,
-      //   isLoading: false,
-      // }));
+      return {
+        description: weatherElements.Wx.parameterName,
+        weatherCode: weatherElements.Wx.parameterValue,
+        rainPossibility: weatherElements.PoP.parameterName,
+        comfortability: weatherElements.CI.parameterName,
+        isLoading: false,
+        // }));
+      };
     });
 };
 
@@ -217,30 +224,33 @@ function App() {
     isLoading: true,
   });
 
+  const fetchData = useCallback(async () => {
+    setWeatherElement((prevState) => ({
+      ...prevState,
+      isLoading: true,
+    }));
+    //使用await等待兩份資料回傳，Promise.all不用管先後順序。ps：要使用await就需要接在async裡面
+    //回傳的兩隻API為"fetch()"
+    const [currentWeather, weatherForecast] = await Promise.all([
+      fetchCurrentWeather(),
+      fetchWeatherForecast(),
+    ]);
+    // console.log(currentWeather);
+    setWeatherElement((prevState) => ({
+      ...prevState,
+      ...currentWeather,
+      ...weatherForecast,
+      isLoading: false,
+    }));
+  }, []);
+
   useEffect(() => {
     console.log("execute function in useEffect");
-    const fetchData = async () => {
-      setWeatherElement((prevState) => ({
-        ...prevState,
-        isLoading: true,
-      }));
-      const [currentWeather, weatherForecast] = await Promise.all([
-        fetchCurrentWeather(),
-        fetchWeatherForecast(),
-      ]);
-      // console.log(currentWeather);
-      setWeatherElement((prevState) => ({
-        ...prevState,
-        ...currentWeather,
-        ...weatherForecast,
-        isLoading: false,
-      }));
-    };
 
     fetchData();
     // fetchCurrentWeather();
     // fetchWeatherForecast();
-  }, []);
+  }, [fetchData]);
 
   //用解構賦值方法把變數名稱從currentWeather取出來，就可以直接取用
   const {
@@ -276,13 +286,7 @@ function App() {
           <Rain>
             <RainIcon /> {rainPossibility}%
           </Rain>
-          <Refresh
-            onClick={() => {
-              fetchCurrentWeather();
-              fetchWeatherForecast();
-            }}
-            isLoading={isLoading}
-          >
+          <Refresh onClick={fetchData} isLoading={isLoading}>
             最後觀測時間：
             {new Intl.DateTimeFormat("zh-TW", {
               hour: "numeric",
