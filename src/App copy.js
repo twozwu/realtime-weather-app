@@ -139,109 +139,87 @@ const AUTHORIZATION_KEY = "CWB-162A49ED-7604-4411-9750-1DBB6E4CC83F";
 const LOCATION_NAME = "古坑";
 const LOCATION_NAME_FORECAST = "雲林縣";
 
-const fetchCurrentWeather = () => {
-  // setWeatherElement((prevState) => ({
-  //   ...prevState,
-  //   isLoading: true,
-  // }));
-
-  return fetch(
-    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
-  )
-    .then((response) => response.json()) //回傳.json()格式檔案
-    .then((data) => {
-      const locationData = data.records.location[0];
-      const weatherElements = locationData.weatherElement.reduce(
-        (neededElements, item) => {
-          //neededElements初始值為空物件，item為目前值
-          if (["WDSD", "TEMP"].includes(item.elementName)) {
-            neededElements[item.elementName] = item.elementValue;
-            //把elementName當key，Value當值，塞到neededElements裡面
-          }
-          return neededElements;
-        },
-        {}
-      );
-      // setWeatherElement((prevState) => ({
-      //   ...prevState,
-      //   observationTime: locationData.time.obsTime,
-      //   locationName: locationData.locationName,
-      //   temperature: weatherElements.TEMP,
-      //   windSpeed: weatherElements.WDSD,
-      // }));
-    });
-};
-
-const fetchWeatherForecast = () => {
-  return fetch(
-    `https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      //取出某縣市的預報資料
-      const locationData = data.records.location[0];
-      //用reduce只保留需要用到的資料(天氣現象、降雨機率、舒適度)
-      const weatherElements = locationData.weatherElement.reduce(
-        (neededElements, item) => {
-          if (["Wx", "PoP", "CI"].includes(item.elementName)) {
-            // 只取time裡的第一筆資料time[0]
-            neededElements[item.elementName] = item.time[0].parameter;
-          }
-          return neededElements;
-        },
-        {}
-      );
-      // setWeatherElement((prevState) => ({
-      //   //如果沒展開會出錯
-      //   ...prevState,
-      //   description: weatherElements.Wx.parameterName,
-      //   weatherCode: weatherElements.Wx.parameterValue,
-      //   rainPossibility: weatherElements.PoP.parameterName,
-      //   comfortability: weatherElements.CI.parameterName,
-      //   isLoading: false,
-      // }));
-    });
-};
-
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
 
   const [weatherElement, setWeatherElement] = useState({
-    observationTime: new Date(),
-    locationName: "",
-    description: "",
-    windSpeed: 0,
-    temperature: 0,
-    rainPossibility: 0,
-    comfortability: "",
+    observationTime: "2020-12-12 22:10:00",
+    locationName: "台北市",
+    description: "多雲時晴",
+    windSpeed: 3.6,
+    temperature: 32.1,
+    rainPossibility: 60,
+    comfortability: "舒適至悶熱",
     isLoading: true,
   });
 
   useEffect(() => {
     console.log("execute function in useEffect");
-    const fetchData = async () => {
-      setWeatherElement((prevState) => ({
-        ...prevState,
-        isLoading: true,
-      }));
-      const [currentWeather, weatherForecast] = await Promise.all([
-        fetchCurrentWeather(),
-        fetchWeatherForecast(),
-      ]);
-      // console.log(currentWeather);
-      setWeatherElement((prevState) => ({
-        ...prevState,
-        ...currentWeather,
-        ...weatherForecast,
-        isLoading: false,
-      }));
-    };
-
-    fetchData();
-    // fetchCurrentWeather();
-    // fetchWeatherForecast();
+    fetchCurrentWeather();
+    fetchWeatherForecast();
   }, []);
 
+  const fetchCurrentWeather = () => {
+    setWeatherElement((prevState) => ({
+      ...prevState,
+      isLoading: true,
+    }));
+
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME}`
+    )
+      .then((response) => response.json()) //回傳.json()格式檔案
+      .then((data) => {
+        const locationData = data.records.location[0];
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElements, item) => {
+            //neededElements初始值為空物件，item為目前值
+            if (["WDSD", "TEMP"].includes(item.elementName)) {
+              neededElements[item.elementName] = item.elementValue;
+              //把elementName當key，Value當值，塞到neededElements裡面
+            }
+            return neededElements;
+          },
+          {}
+        );
+        setWeatherElement({
+          observationTime: locationData.time.obsTime,
+          locationName: locationData.locationName,
+          temperature: weatherElements.TEMP,
+          windSpeed: weatherElements.WDSD,
+          description: "多雲時晴",
+          rainPossibility: 60,
+          isLoading: false,
+        });
+      });
+  };
+
+  const fetchWeatherForecast = () => {
+    fetch(
+      `https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=${AUTHORIZATION_KEY}&locationName=${LOCATION_NAME_FORECAST}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        const locationData = data.records.location[0];
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElements, item) => {
+            if (["Wx", "PoP", "CI"].includes(item.elementName)) {
+              neededElements[item.elementName] = item.time[0].parameter;
+            }
+            return neededElements;
+          },
+          {}
+        );
+
+        setWeatherElement((prevState) => ({
+          ...prevState,
+          description: weatherElements.Wx.parameterName,
+          weatherCode: weatherElements.Wx.parameterValue,
+          rainPossibility: weatherElements.PoP.parameterName,
+          comfortability: weatherElements.CI.parameterName,
+        }));
+      });
+  };
   //用解構賦值方法把變數名稱從currentWeather取出來，就可以直接取用
   const {
     observationTime,
@@ -251,7 +229,6 @@ function App() {
     temperature,
     rainPossibility,
     isLoading,
-    comfortability,
   } = weatherElement;
 
   return (
@@ -260,10 +237,7 @@ function App() {
         {console.log("render, isLoading:", isLoading)}
         <WeatherCard>
           <Location>{locationName}</Location>
-          <Description>
-            {description} -{comfortability}
-          </Description>
-
+          <Description>{description}</Description>
           <CurrentWeather>
             <Temperature>
               {Math.round(temperature)} <Celsius>°C</Celsius>
@@ -276,13 +250,7 @@ function App() {
           <Rain>
             <RainIcon /> {rainPossibility}%
           </Rain>
-          <Refresh
-            onClick={() => {
-              fetchCurrentWeather();
-              fetchWeatherForecast();
-            }}
-            isLoading={isLoading}
-          >
+          <Refresh onClick={fetchCurrentWeather} isLoading={isLoading}>
             最後觀測時間：
             {new Intl.DateTimeFormat("zh-TW", {
               hour: "numeric",
