@@ -1,6 +1,6 @@
 // @此為把weatherIcon拆為一個元件
 
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayCloudyIcon } from "./../images/day-cloudy.svg";
 import { ReactComponent as DayClear } from "./../images/day-clear.svg";
@@ -84,10 +84,17 @@ const IconContainer = styled.div`
   }
 `;
 
-const WeatherIcon = () => {
+const WeatherIcon = ({ weatherCode, moment }) => {
+  //當weatherCode的值不變的時候，就不重新更新
+  const weatherType = useMemo(() => weatherCode2Type(weatherCode), [
+    weatherCode,
+  ]);
+  const weatherIcon = weatherIcons[moment][weatherType];
+
   return (
     <IconContainer>
-      <DayCloudyIcon />
+      {weatherIcon}
+      {/* <DayCloudyIcon /> */}
     </IconContainer>
   );
 };

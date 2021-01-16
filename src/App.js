@@ -1,5 +1,5 @@
 //import './App.css';
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "@emotion/styled";
 import { ReactComponent as DayCloudy } from "./images/day-cloudy.svg";
 import { ReactComponent as RainIcon } from "./images/rain.svg";
@@ -10,6 +10,7 @@ import { useTheme, ThemeProvider, withTheme } from "@emotion/react";
 import dayjs from "dayjs";
 import { ReactComponent as LoadingIcon } from "./images/loading.svg";
 import WeatherIcon from "./components/WeatherIcon";
+import { getMoment } from "./utils/helpers";
 
 const theme = {
   light: {
@@ -214,6 +215,10 @@ const fetchWeatherForecast = () => {
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
 
+  //這裡用useMemo讓日夜沒有改變時，不用再去龐大資料裡找值
+  //TODO：
+  const moment = useMemo(() => getMoment(LOCATION_NAME_FORECAST), []);
+
   const [weatherElement, setWeatherElement] = useState({
     observationTime: new Date(),
     locationName: "",
@@ -237,6 +242,7 @@ function App() {
       fetchWeatherForecast(),
     ]);
     // console.log(currentWeather);
+    console.log(weatherCode);
     setWeatherElement((prevState) => ({
       ...prevState,
       ...currentWeather,
@@ -253,6 +259,10 @@ function App() {
     // fetchWeatherForecast();
   }, [fetchData]);
 
+  useEffect(() => {
+    setCurrentTheme(moment === "day" ? "light" : "dark");
+  }, [moment]);
+
   //用解構賦值方法把變數名稱從currentWeather取出來，就可以直接取用
   const {
     observationTime,
@@ -263,6 +273,7 @@ function App() {
     rainPossibility,
     isLoading,
     comfortability,
+    weatherCode,
   } = weatherElement;
 
   return (
@@ -279,7 +290,7 @@ function App() {
             <Temperature>
               {Math.round(temperature)} <Celsius>°C</Celsius>
             </Temperature>
-            <WeatherIcon />
+            <WeatherIcon weatherCode={weatherCode} moment={moment} />
           </CurrentWeather>
           <AirFlow>
             <AirFlowIcon /> {windSpeed} m/h
