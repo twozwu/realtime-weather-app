@@ -9,6 +9,7 @@ import { ReactComponent as RefreshIcon } from "./images/refresh.svg";
 import { useTheme, ThemeProvider, withTheme } from "@emotion/react";
 import dayjs from "dayjs";
 import { ReactComponent as LoadingIcon } from "./images/loading.svg";
+import WeatherIcon from "./components/WeatherIcon";
 
 const theme = {
   light: {
@@ -131,9 +132,9 @@ const Refresh = styled.div`
   }
 `;
 
-const DayCloudyIcon = styled(DayCloudy)`
-  flex-basis: 30%;
-`;
+// const DayCloudyIcon = styled(DayCloudy)`
+//   flex-basis: 30%;
+// `;
 
 const AUTHORIZATION_KEY = "CWB-162A49ED-7604-4411-9750-1DBB6E4CC83F";
 const LOCATION_NAME = "古坑";
@@ -278,7 +279,7 @@ function App() {
             <Temperature>
               {Math.round(temperature)} <Celsius>°C</Celsius>
             </Temperature>
-            <DayCloudyIcon />
+            <WeatherIcon />
           </CurrentWeather>
           <AirFlow>
             <AirFlowIcon /> {windSpeed} m/h
