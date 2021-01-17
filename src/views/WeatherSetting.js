@@ -98,6 +98,10 @@ const WeatherSetting = ({ handleCurrentPageChange }) => {
     setLocationName(e.target.value);
   };
 
+  const handleSave = () => {
+    console.log("locationName", locationName);
+  };
+
   return (
     <WeatherSettingWrapper>
       <Title>設定</Title>
@@ -118,7 +122,7 @@ const WeatherSetting = ({ handleCurrentPageChange }) => {
 
       <ButtonGroup>
         <Back onClick={() => handleCurrentPageChange("WeatherCard")}>返回</Back>
-        <Save>儲存</Save>
+        <Save onClick={handleSave}>儲存</Save>
       </ButtonGroup>
     </WeatherSettingWrapper>
   );
