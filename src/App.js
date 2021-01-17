@@ -6,6 +6,7 @@ import { getMoment } from "./utils/helpers";
 import WeatherCard from "./views/WeatherCard";
 import styled from "@emotion/styled";
 import useWeatherAPI from "./hooks/useWeatherAPI";
+import WeatherSetting from "./views/WeatherSetting";
 
 const theme = {
   light: {
@@ -48,6 +49,13 @@ function App() {
     authorizationKey: AUTHORIZATION_KEY,
   });
 
+  //判斷目前是哪個頁面，預設是WeatherCard
+  const [currentPage, setCurrentPage] = useState("WeatherCard");
+  const handleCurrentPageChange = (currentPage) => {
+    //把setCurrentPage包成一個函式才能放入參數
+    setCurrentPage(currentPage);
+  };
+
   //這裡用useMemo讓日夜沒有改變時，不用再去龐大資料裡找值
   //TODO：
   const moment = useMemo(() => getMoment(LOCATION_NAME_FORECAST), []);
@@ -63,11 +71,18 @@ function App() {
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
         {console.log("render, isLoading:", isLoading)}
-        <WeatherCard
-          weatherElement={weatherElement}
-          moment={moment}
-          fetchData={fetchData}
-        />
+        {currentPage === "WeatherCard" && (
+          <WeatherCard
+            weatherElement={weatherElement}
+            moment={moment}
+            fetchData={fetchData}
+            handleCurrentPageChange={handleCurrentPageChange}
+          />
+        )}
+
+        {currentPage === "WeatherSetting" && (
+          <WeatherSetting handleCurrentPageChange={handleCurrentPageChange} />
+        )}
       </Container>
     </ThemeProvider>
   );
