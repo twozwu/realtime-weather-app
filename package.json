@@ -1,6 +1,6 @@
 {
   "name": "realtime-weather-app",
-  "homepage": "https://github.com/twozwu/realtime-weather-app.git",
+  "homepage": "https://github.com/twozwu/realtime-weather-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
