@@ -136,8 +136,8 @@ const WeatherCard = ({
       <Cog onClick={() => handleCurrentPageChange("WeatherSetting")} />
       <Location>{cityName}</Location>
       <Description>
-        {description} {"   "}
-        {"   "} {comfortability}
+        {description} <span style={{ display: "inline-block", width: "1vh" }} />
+        {comfortability}
       </Description>
 
       <CurrentWeather>
