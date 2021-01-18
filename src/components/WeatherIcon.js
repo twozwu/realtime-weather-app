@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import styled from "@emotion/styled";
-import { ReactComponent as DayCloudyIcon } from "./../images/day-cloudy.svg";
+//import { ReactComponent as DayCloudyIcon } from "./../images/day-cloudy.svg";
 import { ReactComponent as DayClear } from "./../images/day-clear.svg";
 import { ReactComponent as DayCloudy } from "./../images/day-cloudy.svg";
 import { ReactComponent as DayCloudyFog } from "./../images/day-cloudy-fog.svg";
