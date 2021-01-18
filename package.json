@@ -2,7 +2,7 @@
   "name": "realtime-weather-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://github.com/twozwu/realtime-weather-app",
+  "homepage": "https://twozwu.github.io/realtime-weather-app",
   "dependencies": {
     "@emotion/react": "^11.1.4",
     "@emotion/styled": "^11.0.0",

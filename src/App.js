@@ -1,7 +1,7 @@
 //import './App.css';
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 //import { ThemeProvider } from "emotion-theming";
-import { useTheme, ThemeProvider, withTheme } from "@emotion/react";
+import { ThemeProvider } from "@emotion/react";
 import { getMoment, findLocation } from "./utils/helpers";
 import WeatherCard from "./views/WeatherCard";
 import styled from "@emotion/styled";
@@ -81,13 +81,9 @@ function App() {
     setCurrentTheme(moment === "day" ? "light" : "dark");
   }, [moment]);
 
-  //用解構賦值方法把變數名稱從currentWeather取出來，就可以直接取用
-  const { isLoading, weatherCode } = weatherElement;
-
   return (
     <ThemeProvider theme={theme[currentTheme]}>
       <Container>
-        {console.log("render, isLoading:", isLoading)}
         {currentPage === "WeatherCard" && (
           <WeatherCard
             weatherElement={weatherElement}

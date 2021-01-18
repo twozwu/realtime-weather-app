@@ -121,7 +121,6 @@ const WeatherCard = ({
 }) => {
   const {
     observationTime,
-    locationName,
     description,
     windSpeed,
     temperature,
