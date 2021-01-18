@@ -90,8 +90,12 @@ const Save = styled.button`
   }
 `;
 
-const WeatherSetting = ({ handleCurrentPageChange }) => {
-  const [locationName, setLocationName] = useState("臺北市");
+const WeatherSetting = ({
+  handleCurrentPageChange,
+  cityName,
+  handleCurrentCityChange,
+}) => {
+  const [locationName, setLocationName] = useState(cityName);
 
   const handleChange = (e) => {
     console.log(e.target.value);
@@ -100,6 +104,9 @@ const WeatherSetting = ({ handleCurrentPageChange }) => {
 
   const handleSave = () => {
     console.log("locationName", locationName);
+    handleCurrentCityChange(locationName);
+    handleCurrentPageChange("WeatherCard");
+    localStorage.setItem("cityName", locationName); //把自訂後的城市存到localStorage
   };
 
   return (

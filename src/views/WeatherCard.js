@@ -117,6 +117,7 @@ const WeatherCard = ({
   moment,
   fetchData,
   handleCurrentPageChange,
+  cityName,
 }) => {
   const {
     observationTime,
@@ -133,9 +134,9 @@ const WeatherCard = ({
   return (
     <WeatherCardWrapper>
       <Cog onClick={() => handleCurrentPageChange("WeatherSetting")} />
-      <Location>{locationName}</Location>
+      <Location>{cityName}</Location>
       <Description>
-        {description} -{comfortability}
+        {description} {"   "} {comfortability}
       </Description>
 
       <CurrentWeather>

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 //import { ThemeProvider } from "emotion-theming";
 import { useTheme, ThemeProvider, withTheme } from "@emotion/react";
-import { getMoment } from "./utils/helpers";
+import { getMoment, findLocation } from "./utils/helpers";
 import WeatherCard from "./views/WeatherCard";
 import styled from "@emotion/styled";
 import useWeatherAPI from "./hooks/useWeatherAPI";
@@ -37,28 +37,45 @@ const Container = styled.div`
 `;
 
 const AUTHORIZATION_KEY = "CWB-162A49ED-7604-4411-9750-1DBB6E4CC83F";
-const LOCATION_NAME = "古坑";
-const LOCATION_NAME_FORECAST = "雲林縣";
+// const LOCATION_NAME = "古坑";
+// const LOCATION_NAME_FORECAST = "雲林縣";
 
 function App() {
   const [currentTheme, setCurrentTheme] = useState("light");
 
+  const storageCity = localStorage.getItem("cityName") || "臺北市"; //從localStorage取出儲存值
+  const [currentCity, setCurrentCity] = useState(storageCity);
+
+  //這裡可以用useMemo，只要currentCity沒有改變就不需要重新取值
+  const currentLocation = useMemo(() => findLocation(currentCity), [
+    currentCity,
+  ]); //可以找出所有需要的地名，如cityName:臺北市，locationName:臺北
+
+  const { cityName, locationName, sunriseCityName } = currentLocation; //取出currentLocation裡的值
+
   const [weatherElement, fetchData] = useWeatherAPI({
-    locationName: LOCATION_NAME,
-    cityName: LOCATION_NAME_FORECAST,
+    locationName,
+    cityName,
     authorizationKey: AUTHORIZATION_KEY,
   });
 
   //判斷目前是哪個頁面，預設是WeatherCard
   const [currentPage, setCurrentPage] = useState("WeatherCard");
+
+  //換頁的函式
   const handleCurrentPageChange = (currentPage) => {
     //把setCurrentPage包成一個函式才能放入參數
     setCurrentPage(currentPage);
   };
 
+  //要切換城市的函式
+  const handleCurrentCityChange = (currentCity) => {
+    setCurrentCity(currentCity);
+  };
+
   //這裡用useMemo讓日夜沒有改變時，不用再去龐大資料裡找值
   //TODO：
-  const moment = useMemo(() => getMoment(LOCATION_NAME_FORECAST), []);
+  const moment = useMemo(() => getMoment(sunriseCityName), [sunriseCityName]);
 
   useEffect(() => {
     setCurrentTheme(moment === "day" ? "light" : "dark");
@@ -77,11 +94,16 @@ function App() {
             moment={moment}
             fetchData={fetchData}
             handleCurrentPageChange={handleCurrentPageChange}
+            cityName={cityName}
           />
         )}
 
         {currentPage === "WeatherSetting" && (
-          <WeatherSetting handleCurrentPageChange={handleCurrentPageChange} />
+          <WeatherSetting
+            handleCurrentPageChange={handleCurrentPageChange}
+            cityName={cityName}
+            handleCurrentCityChange={handleCurrentCityChange}
+          />
         )}
       </Container>
     </ThemeProvider>
